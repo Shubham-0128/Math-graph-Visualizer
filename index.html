@@ -3,33 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Math Graph Visualizer</title>
+    <title>Math Graph Visualizer</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Math.js for safe expression parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Animated Math Graph Visualizer</h1>
-            <div class="equation-display">y = sin(x)</div>
-        </header>
-        
-        <main>
-            <div class="canvas-container">
+    <div class="app-container">
+        <!-- Sidebar for Equation Management -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <h1>Graph Visualizer</h1>
+            </header>
+            
+            <div class="equations-section">
+                <div class="section-header">
+                    <h2>Equations</h2>
+                    <button id="btnAddEquation" class="icon-button" title="Add Equation">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
+                <div id="equationList" class="equation-list">
+                    <!-- Equation items will be injected here -->
+                </div>
+            </div>
+
+            <div class="presets-section">
+                <h2>Presets</h2>
+                <div id="presetList" class="preset-list">
+                    <!-- Presets injected here -->
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <h2>Animation Controls</h2>
+                <div class="playback-controls">
+                    <button id="btnPlay" class="control-button">Play</button>
+                    <button id="btnPause" class="control-button">Pause</button>
+                    <button id="btnResetAnim" class="control-button">Restart</button>
+                </div>
+                <div class="speed-control">
+                    <label for="speedSlider">Speed</label>
+                    <input type="range" id="speedSlider" min="1" max="100" value="50">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Graph Area -->
+        <main class="graph-area">
+            <div class="canvas-container" id="canvasContainer">
                 <canvas id="graphCanvas"></canvas>
+                
+                <!-- Overlay for View Controls -->
+                <div class="view-controls">
+                    <button id="btnResetView" class="icon-button" title="Reset View (Home)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </button>
+                </div>
+                
+                <!-- Crosshair & Coordinate Overlay -->
+                <div id="crosshairX" class="crosshair crosshair-x"></div>
+                <div id="crosshairY" class="crosshair crosshair-y"></div>
+                <div id="coordOverlay" class="coord-overlay"></div>
             </div>
         </main>
-
-        <div class="controls-container">
-            <button id="btnPlay">Play</button>
-            <button id="btnPause">Pause</button>
-            <button id="btnReset">Reset</button>
-            
-            <div class="speed-control">
-                <label for="speedSlider">Speed:</label>
-                <input type="range" id="speedSlider" min="1" max="10" value="5">
-            </div>
-        </div>
     </div>
+
+    <!-- Template for Equation Item -->
+    <template id="equationTemplate">
+        <div class="equation-item">
+            <div class="eq-color-picker-wrapper">
+                <input type="color" class="eq-color" value="#ffffff">
+            </div>
+            <div class="eq-input-wrapper">
+                <span class="eq-prefix">y =</span>
+                <input type="text" class="eq-input" placeholder="expression (e.g. sin(x))" spellcheck="false">
+                <div class="eq-error-tooltip">Invalid expression</div>
+            </div>
+            <button class="icon-button eq-toggle" title="Toggle Visibility">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-visible"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-hidden" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+            <button class="icon-button eq-remove" title="Remove">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+    </template>
+
     <script src="script.js"></script>
 </body>
 </html>
