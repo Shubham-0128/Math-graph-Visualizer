@@ -50,6 +50,28 @@ function renderExplicit(eq, ctx) {
         lastY = y;
     }
     ctx.stroke();
+    
+    // Draw Tracer
+    if (eq.progressX >= minX && eq.progressX <= maxX) {
+        let traceY;
+        try { traceY = eq.compiled.compiledFn.evaluate({ x: eq.progressX }); } catch (e) {}
+        
+        if (isFinite(traceY)) {
+            const cx = mathToCanvasX(eq.progressX);
+            const cy = mathToCanvasY(traceY);
+            
+            ctx.beginPath();
+            ctx.fillStyle = '#fff';
+            ctx.arc(cx, cy, 3, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.strokeStyle = eq.color;
+            ctx.lineWidth = 2;
+            ctx.arc(cx, cy, 6, 0, Math.PI*2);
+            ctx.stroke();
+        }
+    }
 }
 
 function renderVertical(eq, ctx) {
@@ -99,6 +121,28 @@ function renderVertical(eq, ctx) {
         lastX = x;
     }
     ctx.stroke();
+
+    // Draw Tracer
+    if (eq.progressY >= minY && eq.progressY <= maxY) {
+        let traceX;
+        try { traceX = eq.compiled.compiledFn.evaluate({ y: eq.progressY }); } catch (e) {}
+        
+        if (isFinite(traceX)) {
+            const cx = mathToCanvasX(traceX);
+            const cy = mathToCanvasY(eq.progressY);
+            
+            ctx.beginPath();
+            ctx.fillStyle = '#fff';
+            ctx.arc(cx, cy, 3, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.strokeStyle = eq.color;
+            ctx.lineWidth = 2;
+            ctx.arc(cx, cy, 6, 0, Math.PI*2);
+            ctx.stroke();
+        }
+    }
 }
 
 export function renderEquation(eq, ctx) {

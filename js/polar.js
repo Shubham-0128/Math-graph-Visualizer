@@ -46,4 +46,28 @@ export function renderPolar(eq, ctx) {
         }
     }
     ctx.stroke();
+    
+    // Tracer
+    if (eq.progress < 1.0) {
+        try {
+            const scope = {};
+            scope[eq.compiled.param] = currentMaxTheta;
+            const r = eq.compiled.compiledR.evaluate(scope);
+            if (isFinite(r)) {
+                const x = r * Math.cos(currentMaxTheta);
+                const y = r * Math.sin(currentMaxTheta);
+                const cx = mathToCanvasX(x);
+                const cy = mathToCanvasY(y);
+                ctx.beginPath();
+                ctx.fillStyle = '#fff';
+                ctx.arc(cx, cy, 3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.strokeStyle = eq.color;
+                ctx.lineWidth = 2;
+                ctx.arc(cx, cy, 6, 0, Math.PI*2);
+                ctx.stroke();
+            }
+        } catch (e) {}
+    }
 }

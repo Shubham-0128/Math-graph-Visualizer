@@ -19,14 +19,24 @@ const container = document.querySelector('.graph-area');
 const eqList = document.getElementById('equationList');
 const template = document.getElementById('equationTemplate');
 const btnAdd = document.getElementById('btnAddEquation');
+const btnEmptyAdd = document.getElementById('btnEmptyAdd');
 const btnPlay = document.getElementById('btnPlay');
 const btnPause = document.getElementById('btnPause');
 const btnResetAnim = document.getElementById('btnResetAnim');
 const btnResetView = document.getElementById('btnResetView');
+const btnFocusMode = document.getElementById('btnFocusMode');
 const speedSlider = document.getElementById('speedSlider');
 const crosshairX = document.getElementById('crosshairX');
 const crosshairY = document.getElementById('crosshairY');
 const coordOverlay = document.getElementById('coordOverlay');
+
+const sidebar = document.getElementById('sidebar');
+const emptyState = document.getElementById('emptyState');
+const examplesPanel = document.getElementById('examplesPanel');
+const btnToggleExamples = document.getElementById('btnToggleExamples');
+const btnCloseExamples = document.getElementById('btnCloseExamples');
+const btnMobileMenu = document.getElementById('btnMobileMenu');
+const btnMobileClose = document.getElementById('btnMobileClose');
 
 viewState.canvas = canvas;
 viewState.ctx = ctx;
@@ -57,9 +67,9 @@ window.addEventListener('pointermove', (e) => {
         coordOverlay.style.left = `${cx}px`;
         coordOverlay.style.top = `${cy}px`;
         
-        const mx = canvasToMathX(cx).toFixed(2);
-        const my = canvasToMathY(cy).toFixed(2);
-        coordOverlay.textContent = `(${mx}, ${my})`;
+        const mx = canvasToMathX(cx).toFixed(3);
+        const my = canvasToMathY(cy).toFixed(3);
+        coordOverlay.textContent = `x = ${mx}\ny = ${my}`;
     } else {
         crosshairX.style.display = 'none';
         crosshairY.style.display = 'none';
@@ -108,6 +118,26 @@ btnResetView.addEventListener('click', () => {
     viewState.offsetX = 0;
     viewState.offsetY = 0;
     viewState.scale = 100;
+});
+
+btnFocusMode.addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
+});
+
+btnMobileMenu.addEventListener('click', () => {
+    sidebar.classList.add('open');
+});
+
+btnMobileClose.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+});
+
+btnToggleExamples.addEventListener('click', () => {
+    examplesPanel.classList.remove('hidden');
+});
+
+btnCloseExamples.addEventListener('click', () => {
+    examplesPanel.classList.add('hidden');
 });
 
 // --- Equation Management ---
@@ -164,23 +194,41 @@ function removeEquation(id) {
 function renderEquationList() {
     eqList.innerHTML = '';
     
+    if (equations.length === 0) {
+        emptyState.classList.add('active');
+        eqList.style.display = 'none';
+        return;
+    }
+    
+    emptyState.classList.remove('active');
+    eqList.style.display = 'flex';
+    
     equations.forEach(eq => {
         const clone = template.content.cloneNode(true);
         const item = clone.querySelector('.equation-item');
         const input = clone.querySelector('.eq-input');
-        const colorInput = clone.querySelector('.eq-color');
+        const colorIndicator = clone.querySelector('.eq-color-indicator');
+        const typeBadge = clone.querySelector('.eq-type-badge');
         const btnToggle = clone.querySelector('.eq-toggle');
         const btnRemove = clone.querySelector('.eq-remove');
         
         if (eq.error) item.classList.add('has-error');
         
         input.value = eq.rawText;
-        colorInput.value = eq.color;
+        colorIndicator.style.backgroundColor = eq.color;
+        
+        if (eq.type) {
+            typeBadge.textContent = eq.type;
+            typeBadge.style.display = 'block';
+        } else {
+            typeBadge.style.display = 'none';
+        }
         
         if (!eq.visible) {
             btnToggle.querySelector('.icon-visible').style.display = 'none';
             btnToggle.querySelector('.icon-hidden').style.display = 'block';
             input.style.opacity = '0.5';
+            colorIndicator.style.opacity = '0.3';
         }
         
         input.addEventListener('input', (e) => {
@@ -188,10 +236,13 @@ function renderEquationList() {
             updateEquation(eq);
             if (eq.error) item.classList.add('has-error');
             else item.classList.remove('has-error');
-        });
-        
-        colorInput.addEventListener('input', (e) => {
-            eq.color = e.target.value;
+            
+            if (eq.type) {
+                typeBadge.textContent = eq.type;
+                typeBadge.style.display = 'block';
+            } else {
+                typeBadge.style.display = 'none';
+            }
         });
         
         btnToggle.addEventListener('click', () => {
@@ -206,24 +257,18 @@ function renderEquationList() {
 }
 
 // --- Presets ---
-const presets = [
-    { label: 'sin(x)', eq: 'y = sin(x)' },
-    { label: 'Heart', eq: '(x^2 + y^2 - 1)^3 = x^2*y^3' },
-    { label: 'Circle', eq: 'x^2 + y^2 = 25' },
-    { label: 'Para. Heart', eq: 'x = 16sin(t)^3, y = 13cos(t) - 5cos(2t) - 2cos(3t) - cos(4t)' },
-    { label: 'Polar', eq: 'r = 1 + cos(theta)' }
-];
-
-const presetList = document.getElementById('presetList');
-presets.forEach(p => {
-    const btn = document.createElement('button');
-    btn.className = 'preset-btn';
-    btn.textContent = p.label;
-    btn.addEventListener('click', () => addEquation(p.eq));
-    presetList.appendChild(btn);
+document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        addEquation(btn.getAttribute('data-eq'));
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+            examplesPanel.classList.add('hidden');
+        }
+    });
 });
 
 btnAdd.addEventListener('click', () => addEquation(''));
+btnEmptyAdd.addEventListener('click', () => addEquation(''));
 
 // --- Animation & Loop ---
 function updateAnimation(dt) {
@@ -291,6 +336,6 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 
 resizeCanvas();
-addEquation('y = x^2');
+renderEquationList(); // Initialize empty state
 animState.lastTime = performance.now();
 animState.frameId = requestAnimationFrame(loop);

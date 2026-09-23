@@ -47,4 +47,25 @@ export function renderParametric(eq, ctx) {
         }
     }
     ctx.stroke();
+    
+    // Tracer
+    if (eq.progress < 1.0) {
+        try {
+            const tx = eq.compiled.compiledX.evaluate({ t: currentMaxT });
+            const ty = eq.compiled.compiledY.evaluate({ t: currentMaxT });
+            if (isFinite(tx) && isFinite(ty)) {
+                const cx = mathToCanvasX(tx);
+                const cy = mathToCanvasY(ty);
+                ctx.beginPath();
+                ctx.fillStyle = '#fff';
+                ctx.arc(cx, cy, 3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.strokeStyle = eq.color;
+                ctx.lineWidth = 2;
+                ctx.arc(cx, cy, 6, 0, Math.PI*2);
+                ctx.stroke();
+            }
+        } catch (e) {}
+    }
 }

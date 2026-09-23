@@ -14,10 +14,10 @@ export const viewState = {
 
 export const config = {
     curveWidth: 2,
-    gridMajor: '#2a2e37',
-    gridMinor: '#1e2128',
-    axisColor: '#475569',
-    textColor: '#94a3b8',
+    gridMajor: 'rgba(255, 255, 255, 0.08)',
+    gridMinor: 'rgba(255, 255, 255, 0.03)',
+    axisColor: 'rgba(255, 255, 255, 0.25)',
+    textColor: '#64748b',
     colors: ['#38bdf8', '#c084fc', '#fbbf24', '#34d399', '#f87171']
 };
 
