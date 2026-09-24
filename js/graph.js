@@ -13,12 +13,12 @@ export const viewState = {
 };
 
 export const config = {
-    curveWidth: 2,
-    gridMajor: 'rgba(255, 255, 255, 0.08)',
-    gridMinor: 'rgba(255, 255, 255, 0.03)',
-    axisColor: 'rgba(255, 255, 255, 0.25)',
-    textColor: '#64748b',
-    colors: ['#38bdf8', '#c084fc', '#fbbf24', '#34d399', '#f87171']
+    curveWidth: 2.5,
+    gridMajor: 'rgba(255, 255, 255, 0.04)',
+    gridMinor: 'rgba(255, 255, 255, 0.015)',
+    axisColor: 'rgba(255, 255, 255, 0.15)',
+    textColor: '#52525b',
+    colors: ['#0ea5e9', '#8b5cf6', '#fb7185', '#34d399', '#fbbf24']
 };
 
 export function getCanvasDims() {

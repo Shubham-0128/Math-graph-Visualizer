@@ -145,8 +145,15 @@ function renderVertical(eq, ctx) {
     }
 }
 
-export function renderEquation(eq, ctx) {
+export function renderEquation(eq, ctx, isActive = false) {
     if (!eq.visible || !eq.compiled) return;
+    
+    ctx.save();
+    
+    if (isActive) {
+        ctx.shadowColor = eq.color;
+        ctx.shadowBlur = 15;
+    }
     
     // Handle animation clip/reveal based on type, or just draw
     switch (eq.type) {
@@ -157,17 +164,13 @@ export function renderEquation(eq, ctx) {
             renderVertical(eq, ctx);
             break;
         case EquationType.IMPLICIT:
-            // For implicit, animation is a radius clip mask, but let's just do an opacity fade or global clip
-            ctx.save();
             if (eq.progress < 1) {
                 const { w, h } = getCanvasDims();
                 ctx.beginPath();
-                // Reveal from center outwards as a circle
                 ctx.arc(w/2, h/2, Math.max(w, h) * eq.progress, 0, Math.PI * 2);
                 ctx.clip();
             }
             renderImplicit(eq, ctx);
-            ctx.restore();
             break;
         case EquationType.PARAMETRIC:
             renderParametric(eq, ctx);
@@ -176,4 +179,6 @@ export function renderEquation(eq, ctx) {
             renderPolar(eq, ctx);
             break;
     }
+    
+    ctx.restore();
 }

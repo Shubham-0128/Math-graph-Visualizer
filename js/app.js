@@ -4,6 +4,7 @@ import { renderEquation } from './renderer.js';
 
 let equations = [];
 let nextEqId = 1;
+export let activeEqId = null;
 
 const animState = {
     isPlaying: true,
@@ -24,11 +25,14 @@ const btnPlay = document.getElementById('btnPlay');
 const btnPause = document.getElementById('btnPause');
 const btnResetAnim = document.getElementById('btnResetAnim');
 const btnResetView = document.getElementById('btnResetView');
-const btnFocusMode = document.getElementById('btnFocusMode');
-const speedSlider = document.getElementById('speedSlider');
+const btnFocusMode = document.getElementById('btnFocusModeHeader');
+const appWrapper = document.getElementById('appWrapper');
+// ... other DOM elements
 const crosshairX = document.getElementById('crosshairX');
 const crosshairY = document.getElementById('crosshairY');
 const coordOverlay = document.getElementById('coordOverlay');
+const hudX = document.getElementById('hudX');
+const hudY = document.getElementById('hudY');
 
 const sidebar = document.getElementById('sidebar');
 const emptyState = document.getElementById('emptyState');
@@ -36,7 +40,7 @@ const examplesPanel = document.getElementById('examplesPanel');
 const btnToggleExamples = document.getElementById('btnToggleExamples');
 const btnCloseExamples = document.getElementById('btnCloseExamples');
 const btnMobileMenu = document.getElementById('btnMobileMenu');
-const btnMobileClose = document.getElementById('btnMobileClose');
+// btnMobileClose removed from HTML
 
 viewState.canvas = canvas;
 viewState.ctx = ctx;
@@ -60,7 +64,7 @@ window.addEventListener('pointermove', (e) => {
         
         crosshairX.style.display = 'block';
         crosshairY.style.display = 'block';
-        coordOverlay.style.display = 'block';
+        coordOverlay.style.display = 'flex';
         
         crosshairX.style.left = `${cx}px`;
         crosshairY.style.top = `${cy}px`;
@@ -69,7 +73,12 @@ window.addEventListener('pointermove', (e) => {
         
         const mx = canvasToMathX(cx).toFixed(3);
         const my = canvasToMathY(cy).toFixed(3);
-        coordOverlay.textContent = `x = ${mx}\ny = ${my}`;
+        if(hudX && hudY) {
+            hudX.textContent = mx;
+            hudY.textContent = my;
+        } else {
+            coordOverlay.textContent = `x = ${mx}\ny = ${my}`;
+        }
     } else {
         crosshairX.style.display = 'none';
         crosshairY.style.display = 'none';
@@ -121,15 +130,13 @@ btnResetView.addEventListener('click', () => {
 });
 
 btnFocusMode.addEventListener('click', () => {
-    sidebar.classList.toggle('hidden');
+    if(appWrapper) {
+        appWrapper.classList.toggle('focus-mode');
+    }
 });
 
 btnMobileMenu.addEventListener('click', () => {
     sidebar.classList.add('open');
-});
-
-btnMobileClose.addEventListener('click', () => {
-    sidebar.classList.remove('open');
 });
 
 btnToggleExamples.addEventListener('click', () => {
@@ -208,6 +215,7 @@ function renderEquationList() {
         const item = clone.querySelector('.equation-item');
         const input = clone.querySelector('.eq-input');
         const colorIndicator = clone.querySelector('.eq-color-indicator');
+        const colorBar = clone.querySelector('.eq-color-bar');
         const typeBadge = clone.querySelector('.eq-type-badge');
         const btnToggle = clone.querySelector('.eq-toggle');
         const btnRemove = clone.querySelector('.eq-remove');
@@ -215,7 +223,8 @@ function renderEquationList() {
         if (eq.error) item.classList.add('has-error');
         
         input.value = eq.rawText;
-        colorIndicator.style.backgroundColor = eq.color;
+        if(colorIndicator) colorIndicator.style.color = eq.color;
+        if(colorBar) colorBar.style.backgroundColor = eq.color;
         
         if (eq.type) {
             typeBadge.textContent = eq.type;
@@ -228,9 +237,18 @@ function renderEquationList() {
             btnToggle.querySelector('.icon-visible').style.display = 'none';
             btnToggle.querySelector('.icon-hidden').style.display = 'block';
             input.style.opacity = '0.5';
-            colorIndicator.style.opacity = '0.3';
+            if(colorIndicator) colorIndicator.style.opacity = '0.3';
+            if(colorBar) colorBar.style.opacity = '0.3';
         }
         
+        input.addEventListener('focus', () => {
+            activeEqId = eq.id;
+        });
+        
+        input.addEventListener('blur', () => {
+            if(activeEqId === eq.id) activeEqId = null;
+        });
+
         input.addEventListener('input', (e) => {
             eq.rawText = e.target.value;
             updateEquation(eq);
@@ -307,7 +325,7 @@ function loop(timestamp) {
     drawGridAndAxes();
     
     equations.forEach(eq => {
-        renderEquation(eq, ctx);
+        renderEquation(eq, ctx, activeEqId === eq.id);
     });
     
     animState.frameId = requestAnimationFrame(loop);
